@@ -1,0 +1,219 @@
+ninehub.lua
+-- NINEHUB v1.1 - FORSAKEN (MOBILE + GITHUB)
+-- Auto Gen + ESP Gen + ESP Player + Kill Aura + Auto Block 1337 + Auto Slash
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+wait(5)
+
+-- Bypass
+pcall(function()
+    for _, v in pairs(getconnections(game:GetService("ScriptContext").Error)) do v:Disable() end
+end)
+
+-- ESP Gen
+local espGenOn = false
+local function toggleEspGen(state)
+    espGenOn = state
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name:find("Generator") or obj.Name:find("Gen") then
+            local h = obj:FindFirstChild("NINEHUB_GEN")
+            if espGenOn and not h then
+                h = Instance.new("Highlight")
+                h.Name = "NINEHUB_GEN"
+                h.FillColor = Color3.fromRGB(255,255,0)
+                h.FillTransparency = 0.3
+                h.Parent = obj
+            elseif not espGenOn and h then
+                h:Destroy()
+            end
+        end
+    end
+end
+
+-- Auto Gen
+local autoGenOn = false
+local function toggleAutoGen(state)
+    autoGenOn = state
+    spawn(function()
+        while autoGenOn do
+            pcall(function()
+                for _, gen in pairs(workspace:GetDescendants()) do
+                    if gen:FindFirstChild("ProximityPrompt") and gen.Name:find("Gen") then
+                        local dist = player.Character and (player.Character.HumanoidRootPart.Position - gen.Position).Magnitude
+                        if dist and dist <= 12 then
+                            fireproximityprompt(gen.ProximityPrompt)
+                        end
+                    end
+                end
+            end)
+            wait(0.5)
+        end
+    end)
+end
+
+-- ESP Player
+local espPlayerOn = false
+local function toggleEspPlayer(state)
+    espPlayerOn = state
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character then
+            local h = plr.Character:FindFirstChild("NINEHUB_PLAYER")
+            if espPlayerOn and not h then
+                h = Instance.new("Highlight")
+                h.Name = "NINEHUB_PLAYER"
+                h.FillColor = plr.Name == "Guest 1337" and Color3.fromRGB(255,0,0) or Color3.fromRGB(0,255,0)
+                h.FillTransparency = 0.5
+                h.Parent = plr.Character
+            elseif not espPlayerOn and h then
+                h:Destroy()
+            end
+        end
+    end
+end
+
+-- Kill Aura
+local killAuraOn = false
+local function toggleKillAura(state)
+    killAuraOn = state
+    spawn(function()
+        while killAuraOn do
+            pcall(function()
+                local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    for _, plr in pairs(Players:GetPlayers()) do
+                        if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                            local dist = (root.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+                            if dist <= 8 then
+                                plr.Character.Humanoid.Health = 0
+                            end
+                        end
+                    end
+                end
+            end)
+            wait(0.4)
+        end
+    end)
+end
+
+-- Auto Block 1337
+local block1337On = false
+local function toggleBlock1337(state)
+    block1337On = state
+    spawn(function()
+        while block1337On do
+            pcall(function()
+                local killer = Players:FindFirstChild("Guest 1337")
+                if killer and killer.Character and player.Character then
+                    local kRoot = killer.Character.HumanoidRootPart
+                    local pRoot = player.Character.HumanoidRootPart
+                    local dist = (pRoot.Position - kRoot.Position).Magnitude
+                    if dist < 20 then
+                        pRoot.CFrame = pRoot.CFrame + (pRoot.Position - kRoot.Position).unit * 5
+                    end
+                end
+            end)
+            wait(0.3)
+        end
+    end)
+end
+
+-- Auto Slash
+local autoSlashOn = false
+local function toggleAutoSlash(state)
+    autoSlashOn = state
+    spawn(function()
+        while autoSlashOn do
+            pcall(function()
+                local slash = ReplicatedStorage.Events:FindFirstChild("Slash") or ReplicatedStorage.Events:FindFirstChild("Attack")
+                if slash then slash:FireServer() end
+            end)
+            wait(0.2)
+        end
+    end)
+end
+
+-- UI
+local screen = Instance.new("ScreenGui")
+screen.Name = "NINEHUB"
+screen.Parent = playerGui
+screen.ResetOnSpawn = false
+screen.DisplayOrder = 999999
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0,70,0,70)
+toggleBtn.Position = UDim2.new(1,-85,0,15)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30,0,60)
+toggleBtn.Text = "N"
+toggleBtn.TextColor3 = Color3.fromRGB(180,0,255)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 36
+toggleBtn.Parent = screen
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,20)
+local stroke = Instance.new("UIStroke", toggleBtn)
+stroke.Color = Color3.fromRGB(180,0,255)
+stroke.Thickness = 4
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0,360,0,450)
+mainFrame.Position = UDim2.new(0.5,-180,0.5,-225)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15,0,30)
+mainFrame.Visible = false
+mainFrame.Parent = screen
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0,20)
+local fstroke = Instance.new("UIStroke", mainFrame)
+fstroke.Color = Color3.fromRGB(180,0,255)
+fstroke.Thickness = 3
+
+local content = Instance.new("ScrollingFrame")
+content.Size = UDim2.new(1,-20,1,-70)
+content.Position = UDim2.new(0,10,0,60)
+content.BackgroundTransparency = 1
+content.ScrollBarThickness = 6
+content.ScrollBarImageColor3 = Color3.fromRGB(180,0,255)
+content.Parent = mainFrame
+
+local list = Instance.new("UIListLayout")
+list.Padding = UDim.new(0,12)
+list.Parent = content
+
+local function addToggle(name, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1,0,0,40)
+    frame.BackgroundColor3 = Color3.fromRGB(25,0,50)
+    frame.Parent = content
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.7,0,1,0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = Color3.new(1,1,1)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+
+    local tog = Instance.new("TextButton")
+    tog.Size = UDim2.new(0,50,0,30)
+    tog.Position = UDim2.new(1,-55,0,5)
+    tog.BackgroundColor3 = Color3.fromRGB(100,0,150)
+    tog.Text = "OFF"
+    tog.TextColor3 = Color3.new(1,1,1)
+    tog.Font = Enum.Font.GothamBold
+    tog.Parent = frame
+    Instance.new("UICorner", tog).CornerRadius = UDim.new(0,15)
+
+    local state = false
+    tog.MouseButton1Click:Connect(function()
+        state = not state
+        tog.Text = state and "ON" or "OFF"
+        tog.BackgroundColor3 = state and Color3.fromRGB(180,0,255) or
